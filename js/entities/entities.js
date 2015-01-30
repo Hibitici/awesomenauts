@@ -12,10 +12,12 @@
         }]);
 
         this.body.setVelocity(5, 20);    
+       me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 
         this.renderable.addAnimation("idle", [78]);
    		this.renderable.addAnimation("walk", [117, 118, 119, 120, 121, 122, 123, 124, 125], 80);
-       
+        this.renderable.setCurrentAnimation("attack", [65, 66, 67, 68, 69, 70, 71, 72], 80);
+        
         this.renderable.setCurrentAnimation("idle")
  },
 
@@ -32,9 +34,22 @@
           	this.body.vel.x = 0;
           }
 
+         
+         if (me.input.isKeyPressed("attack")) {
+               console.log("attack1")
+               if(!this.renderable.isCurrentAnimation("attack")){
+              console.log("attack2");
+              //this sets the attack to go back to the idle  position
+               this.renderable.setCurrentAnimation("attack", "idle");
+ 
+               this.renderable.setAnimationFrame();
+           }
+       }
+
             if(this.body.vel.x !== 0){
             if(!this.renderable.isCurrentAnimation("walk")){
-           this.renderable.setCurrentAnimation("walk");
+            this.renderable.setCurrentAnimation("walk");
+        	
         }
           }else{
           	 this.renderable.setCurrentAnimation("idle");
@@ -64,13 +79,18 @@ game.PlayerBaseEntity = me.Entity.extend({
      this.health = 10;
      this.alwaysUpdate = true;
      this.body.onCollision = this.onCollision.bind(this);
-
+     console.log("init");
      this.type = "PlayerBaseEntity";   
+     
+     this.renderable.addAnimation("idle", [0]);
+     this.renderable.addAnimation("broken", [1]);
+     this.renderable.setCurrentAnimation("idle");
    },
    
     update:function(delta){
          if(this.health<=0){
          	this.broken = true;
+            this.renderable.setCurrentAnimation("broken");
          }
       this.body.update(delta);
 
@@ -103,12 +123,15 @@ game.PlayerBaseEntity = me.Entity.extend({
 
      this.type = "EnemyBaseEntity";   
 
-
+         this.renderable.addAnimation("idle", [0]);
+     	 this.renderable.addAnimation("broken", [1]);
+     	 this.renderable.setCurrentAnimation("idle");
 	},
    
     update:function(delta){
          if(this.health<=0){
          	this.broken = true;
+            this.renderable.setCurrentAnimation("broken");
          }
       this.body.update(delta);
 
