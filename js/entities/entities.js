@@ -13,7 +13,6 @@
 
         this.body.setVelocity(5, 20);    
         this.facing = "right";
-
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 
         this.renderable.addAnimation("idle", [78]);
@@ -32,9 +31,9 @@
          	 this.body.vel.x += this.body.accel.x * me.timer.tick;
              this.facing = "right";
              this.flipX(true);
+           
            }else if (me.input.isKeyPressed("left")){
-                  this.body.vel.x -=this.body.accel.x * me.timer.
-                  tick;
+                  this.body.vel.x -=this.body.accel.x * me.timer.tick;
                   this.facing = "left";
                   this.flipX(false);
        
@@ -42,9 +41,9 @@
           	this.body.vel.x = 0;
           }
               
-              if(me.input.isKeyPressed("jump") && !this.jumping && !this.falling){
-                  this.jumping = true;
-                  this.body.vel.y = this.body.accel.y * me.timer.tick;
+              if(me.input.isKeyPressed("jump") && !this.body.jumping && !this.body.falling){
+                  this.body.jumping = true;
+                  this.body.vel.y -= this.body.accel.y * me.timer.tick;
               }
 
 
@@ -85,23 +84,24 @@
            }
        }
 
-          me.Collision.check(this, true, this.CollisionHandler.bind(this), true);
-         this.body.update (delta);
+          me.collision.check(this, true, this.collideHandler.bind(this), true);
+         this.body.update(delta);
          
          this._super(me.Entity, "update", [delta]);
           return true;
    },
 
     collideHandler: function(response){
-    	if(response.b.type==='EnemyBaseEntityi')
+    	if(response.b.type==='EnemyBaseEntity'){
     		var ydif = this.pos.y - response.b.pos.y;
     	    var xdif = this.pos.x - response.b.pos.x;
     
     console.log("xdif " + xdif + "ydif " + ydif);
-         if () {
-         	// this.body.vel.x = 0;
-         	// this.pos.x = this.pos.x -1;
-         //};
+         if (xdif>-35) {
+         	 this.body.vel.x = 0;
+         	 this.pos.x = this.pos.x -1;
+            }
+         }
 
     }
  });
