@@ -17,10 +17,16 @@ var game = {
 		playerJumpHeight: 10,
 		creepMoveSpeed: 5,
 		GameManager: "",
-		Player: ""
+		Player: "",
+		exp: 0,
+		gold: 0,
+		exp1: 0,
+		exp2: 0,
+		exp3: 0,
+		exp4: 0,
 
 	},
-	
+	 
 	
 	// Run on page load.
 	"onload" : function () {

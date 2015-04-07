@@ -18,6 +18,7 @@
         this.now = new Date().getTime();
         this.lastHit = this.now;
         this.dead = false;
+        this.attack = game.data.playerAttack;
         this.lastAttack = new Date().getTime();
         me.game.viewport.follow(this.pos, me.game.viewport.AXIS.BOTH);
 
@@ -28,46 +29,23 @@
  },
 
         update: function(delta){
-            this.now = new Date().getTime();
+              this.now = new Date().getTime();
+
+              //this.dead = checkIfDead ();
+
+              this.checkKeyPressedAndMove();
                
-               if (this.health <= 0){
-                    this.dead = true;
-             
-             }
+                
            
-           
-           if(me.input.isKeyPressed("right")) {
- 		       //console.log("right");s
- 			//sets the position of my x by adding the velocity defined above
- 			//setVelocity() and multiplying it by me .timer.tick.
- 			//me.timer.tick makes movement look smooth
-      
-         	 this.body.vel.x += this.body.accel.x * me.timer.tick;
-           this.facing = "right";
-           this.flipX(true);
-           }else if (me.input.isKeyPressed("left")){
-           this.body.vel.x -=this.body.accel.x * me.timer.tick;
-           this.facing = "left";
-           this.flipX(false);
-         
-          }else{
-          this.body.vel.x = 0;
-          }
-              
-           if(me.input.isKeyPressed("jump") && !this.body.jumping && !this.body.falling){
-              this.body.jumping = true;
-              this.body.vel.y -=this.body.accel.y * me.timer.tick;
-          }
          
            if (me.input.isKeyPressed("attack")) {
-               
-           if(!this.renderable.isCurrentAnimation("attack")){
-               //console.log(!this.renderable.isCurrentAnimation("attack"))
-            console.log()
-              //this sets the attack to go back to the idle  position  
-            this.renderable.setCurrentAnimation("attack", "idle");
+                  if(!this.renderable.isCurrentAnimation("attack")){
+                   //console.log(!this.renderable.isCurrentAnimation("attack"))
+                  console.log()
+                    //this sets the attack to go back to the idle  position  
+                  this.renderable.setCurrentAnimation("attack", "idle");
  
-            this.renderable.setAnimationFrame();
+                  this.renderable.setAnimationFrame();
               }
           }
            
@@ -89,10 +67,52 @@
           return true;
       },
  
+        checkIfDead: function(){
+          if (this.health <= 0){
+              return true;
+           }
+           return false;
+        },
+             checkKeyPressedAndMove: function(){
+           if(me.input.isKeyPressed("right")) {
+                this.moveRight();
+           }else if (me.input.isKeyPressed("left")){
+               this.moveLeft();
+           }else{
+               this.body.vel.x = 0;
+          }
+
+           if(me.input.isKeyPressed("jump") && !this.body.jumping && !this.body.falling){
+              this.jump();
+          }
+       },
+
+          moveRight: function(){
+                 //console.log("right");s
+                //sets the position of my x by adding the velocity defined above
+               //setVelocity() and multiplying it by me .timer.tick.
+              //me.timer.tick makes movement look smooth
+      
+               this.body.vel.x += this.body.accel.x * me.timer.tick;
+               this.facing = "right";
+               this.flipX(true);
+           },
+           moveLeft: function(){
+               this.body.vel.x -=this.body.accel.x * me.timer.tick;
+               this.facing = "left";
+               this.flipX(false);
+           },            
+
           loseHealth: function(damage){
           this.health = this.health - damage;
           console.log(this.health);
        },
+     
+          jump: function(){
+              this.body.jumping = true;
+              this.body.vel.y -=this.body.accel.y * me.timer.tick;
+
+          },
 
           collideHandler: function(response){
     	    if(response.b.type==='EnemyBaseEntity'){
@@ -141,208 +161,18 @@
                      (((xdif>0) && this.facing==="left") || ((xdif<0) && this.facing==="right"))
                       )){
                  this.lastHit = this.now;
-                 cosnole.log(response.b.health);
+               //if the creeps health is less than our attack,exicute code if statement 
+                 if(response.b.health <= game.data.playerAttack){
+
+                    game.data.gold += 1;
+                    console.log("Current Gold: " + game.data.gold);
+                 }
+                 console.log(response.b.health);
                  response.b.loseHealth(game.data.playerAttack);
-              }
+               }
             } 
           }
         }
       });
 
-          game.PlayerBaseEntity = me.Entity.extend({
-	             init : function(x, y, settings){
-               this._super(me.Entity, 'init', [x, y, {
-	             image: "tower",
-	             width: 100,
-	             height: 100,
-	             spritewidth: "100",
-               spriteheight: "100",
-               getShape: function(){  
-               return (new me.Rect(0, 0, 100, 70)).toPolygon();
-            }
-      }]);
-               this.broken = false;
-               this.health = game.data.playerBaseHealth;
-               this.alwaysUpdate = true;
-               this.body.onCollision = this.onCollision.bind(this);
-               this.type = "PlayerBase";   
-     
-               this.renderable.addAnimation("idle", [0]);
-               this.renderable.addAnimation("broken", [1]);
-               this.renderable.setCurrentAnimation("idle");
-          },
-   
-               update:function(delta){
-                  if(this.health<=0){
-         	          this.broken = true;
-                       this.renderable.setCurrentAnimation("broken");
-          }
-               this.body.update(delta);
-
-               this._super(me.Entity, "update", [delta]);
-        
-               return true;
-          },
-      
-               loseHealth: function(damage){
-                  this.health = this.health- damage;
-          },
- 
-               onCollision: function (){
-   	
-             }
-         });
-
-               game.EnemyBaseEntity = me.Entity.extend( {
-	             init : function(x, y, settings){
-               this._super(me.Entity, 'init', [x, y, {
-	             image: "tower",
-	             width: 100,
-	             height: 100,
-	             spritewidth: "100",
-               spriteheight: "100",
-               getShape: function(){  
-               return (new me.Rect(0, 0, 100, 70)).toPolygon();
-          }
-     }]);
-              this.broken = false;
-              this.health = game.data.enemyBaseHealth;
-              this.alwaysUpdate = true;
-              this.body.onCollision = this.onCollision.bind(this);
-
-              this.type = "EnemyBaseEntity";   
-
-              this.renderable.addAnimation("idle", [0]);
-     	        this.renderable.addAnimation("broken", [1]);
-     	        this.renderable.setCurrentAnimation("idle");
-	       },
-   
-              update:function(delta){
-              if(this.health<=0){
-         	    this.broken = true;
-              this.renderable.setCurrentAnimation("broken");
-          }
-              this.body.update(delta);
-
-              this._super(me.Entity, "update", [delta]);
-              return true;
-
-          },
-
-              onCollision: function (){
-   	
-         },
-
-              loseHealth: function(){
-   	                 this.health --;
-         }
-
- 
-
-
-          });
-              game.EnemyCreep = me.Entity.extend({
-              init: function(x, y, settings){
-              this._super(me.Entity, 'init', [x, y, {
-              image: "creep1",
-              width: 32,
-              height: 64,
-              spritewidth: "32",
-              spriteheight: "64",
-              getShape: function(){
-             	return (new me.Rect(0, 0, 32, 64)).toPolygon();
-             }
-        }]);
-              this.health = game.data.enemyCreepHealth;
-              this.alwaysUpdate = true;
-          //this.attacki ng lest us know if enemy is attacking
-              this.Attacking = false;
-          //tells us when the creep last attacks 
-              this.lastAttacking = new Date().getTime();
-              this.lastHit = new Date().getTime();
-              this.now = new Date().getTime();
-              this.body.setVelocity(3, 20);
-
-              this.type = "EnemyCreep";
-
-              this.renderable.addAnimation("walk", [3, 4, 5], 80);
-              this.renderable.setCurrentAnimation("walk");
-        },
-     
-              loseHealth: function(damage){
-              console.log("I'm dying!: " + this.health);
-              this.health = this.health - damage;
-       },
-
-          
-             update: function(delta){
-               if(this.health <= 0){
-                  console.log(this.health)
-                  me.game.world.removeChild(this);
-          }
-
-             this.now = new Date().getTime();
-              this.body.vel.x -= this.body.accel.x * me.timer.tick;
-        
-              me.collision.check(this, true, this.collideHandler.bind(this),true);
-
-             this.body.update(delta);
          
-             this._super(me.Entity, "update", [delta]);  return true;
-         },
-             collideHandler: function(response){
-             if(response.b.type==='PlayerBase'){
-             this.attacking=true;
-             this.lastAttacking==this.now;
-             this.body.vel.x = 0;
-             this.pos.x = this.pos.x +1;
-             if((this.now-this.lastHit >= 1000)){
-             this.lastHit = this.now;
-             response.b.loseHealth(game.data.enemyCreepAttack);
-          }
-             }else if(response.b.type=='PlayerEntity'){
-                var xdif = this.pos.x = response.b.pos.x;
-            
-             this.attacking=true;
-             this.lastAttacking==this.now;
-          
-            if(xdif>0){
-         
-             this.pos.x = this.pos.x +1;
-             this.body.vel.x = 0;
-          }
-         
-            if((this.now-this.lastHit >= 1000) && xdif>0){
-                this.lastHit = this.now;
-                response.b.loseHealth(game.data.enemyCreepAttack);
-               } 
- 
-            }
-         }
-     });
-
-            game.GameManager = Object.extend({
-            init: function(x, y, settings) {
-            this.now = new Date().getTime();
-            this.lastCreep = new Date().getTime();
-
-            this.alwaysUpdate = true;
-       },
-
-            update: function(){
-            this.now = new Date().getTime();
-
-            if (game.data.player.dead) {
-                 me.game.world.removeChild(game.data.player);
-                 me.state.current().resetPlayer (10, 0);
-            }
-
-            if(Math.round(this.now/1000)%10 ===0 && (this.now - this.lastCreep >= 1000)) {
-                this.lastCreep = this.now;
-                var creep = me.pool.pull("EnemyCreep", 4060, 0 ,{});
-                me.game.world.addChild(creep, 5);
-            }
-            return true;
-       }
-   
-   });
